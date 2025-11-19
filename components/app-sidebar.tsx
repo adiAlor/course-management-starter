@@ -39,13 +39,8 @@ const staticData = {
   navMain: [
     {
       title: "Dashboard",
-      url: "#",
+      url: "/dashboard",
       icon: IconDashboard,
-    },
-    {
-      title: "Lifecycle",
-      url: "#",
-      icon: IconListDetails,
     },
     {
       title: "Analytics",
@@ -61,6 +56,38 @@ const staticData = {
       title: "Team",
       url: "#",
       icon: IconUsers,
+    },
+  ],
+  navAdmin: [
+    {
+      title: "Admin Dashboard",
+      url: "/dashboard/admin",
+      icon: IconSettings,
+    },
+    {
+      title: "User Management",
+      url: "/dashboard/admin/users",
+      icon: IconUsers,
+    },
+    {
+      title: "Courses",
+      url: "/dashboard/admin/courses",
+      icon: IconFileDescription,
+    },
+    {
+      title: "Classes",
+      url: "/dashboard/admin/classes",
+      icon: IconListDetails,
+    },
+    {
+      title: "Cohorts",
+      url: "/dashboard/admin/cohorts",
+      icon: IconFolder,
+    },
+    {
+      title: "Materials",
+      url: "/dashboard/admin/materials",
+      icon: IconFileWord,
     },
   ],
   navClouds: [
@@ -149,16 +176,19 @@ const staticData = {
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { data: session } = useSession()
-  
+
   const userData = session?.user ? {
     name: session.user.name || "User",
     email: session.user.email,
     avatar: session.user.image || "/codeguide-logo.png",
   } : {
     name: "Guest",
-    email: "guest@example.com", 
+    email: "guest@example.com",
     avatar: "/codeguide-logo.png",
   }
+
+  // Check if user has admin role
+  const isAdmin = hasAdminRole(session?.user);
 
   return (
     <Sidebar collapsible="offcanvas" {...props}>
@@ -179,6 +209,14 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       </SidebarHeader>
       <SidebarContent>
         <NavMain items={staticData.navMain} />
+        {isAdmin && (
+          <>
+            <div className="px-3 py-2">
+              <h2 className="mb-2 px-4 text-lg font-semibold tracking-tight">Admin</h2>
+              <NavMain items={staticData.navAdmin} />
+            </div>
+          </>
+        )}
         <NavDocuments items={staticData.documents} />
         <NavSecondary items={staticData.navSecondary} className="mt-auto" />
       </SidebarContent>
@@ -187,4 +225,10 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       </SidebarFooter>
     </Sidebar>
   )
+}
+
+// Helper function to check if user has admin role
+function hasAdminRole(user: any): boolean {
+  const role = user?.role || user?.user_type || user?.userRole;
+  return role === 'admin' || role === 'administrator' || role === 'Admin';
 }

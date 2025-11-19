@@ -1,14 +1,1 @@
-flowchart TD
-  Start[Landing Page]
-  SignUpPage[Sign Up Page]
-  SignInPage[Sign In Page]
-  AuthAPI[Authentication API Endpoint]
-  DashboardPage[Dashboard Page]
-  Start -->|Select Sign Up| SignUpPage
-  Start -->|Select Sign In| SignInPage
-  SignUpPage -->|Submit Credentials| AuthAPI
-  SignInPage -->|Submit Credentials| AuthAPI
-  AuthAPI -->|Success| DashboardPage
-  AuthAPI -->|Error| SignUpPage
-  AuthAPI -->|Error| SignInPage
-  DashboardPage -->|Click Logout| Start
+flowchart TD\n  Start[User accesses app] --> SignIn[SignIn Page]\n  Start --> SignUp[SignUp Page]\n  SignIn --> SubmitSignin[Submit credentials]\n  SignUp --> SubmitSignup[Submit signup data]\n  SubmitSignin --> AuthAPI[Send credentials to Auth API]\n  SubmitSignup --> AuthAPI[Send signup data to Auth API]\n  AuthAPI --> AuthCheck{Auth successful}\n  AuthCheck -->|Yes| DashboardLayout[Load Dashboard Layout]\n  AuthCheck -->|No| SignIn]\n  DashboardLayout --> FetchUser[Request user data and role]\n  FetchUser --> RoleCheck{Determine user role}\n  RoleCheck -->|Admin| AdminDashboard[Admin Dashboard]\n  RoleCheck -->|Instructor| InstructorDashboard[Instructor Dashboard]\n  RoleCheck -->|Student| StudentDashboard[Student Dashboard]\n  RoleCheck -->|Leadership| LeadershipDashboard[Leadership Dashboard]\n  AdminDashboard --> UserMgnt[User Management]\n  AdminDashboard --> CourseMgnt[Course Management]\n  AdminDashboard --> CohortMgnt[Cohort Management]\n  InstructorDashboard --> CourseView[View Courses]\n  InstructorDashboard --> AssignmentMgmt[Manage Assignments]\n  StudentDashboard --> CourseList[List My Courses]\n  StudentDashboard --> SubmitAssignment[Submit Assignment]\n  LeadershipDashboard --> Analytics[View Analytics]\n  DashboardLayout --> Logout[Logout]\n  Logout --> SignIn

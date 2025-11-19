@@ -1,117 +1,94 @@
-# Project Requirements Document: codeguide-starter
-
----
+# Project Requirements Document
 
 ## 1. Project Overview
 
-The **codeguide-starter** project is a boilerplate web application that provides a ready-made foundation for any web project requiring secure user authentication and a post-login dashboard. It sets up the common building blocks—sign-up and sign-in pages, API routes to handle registration and login, and a simple dashboard interface driven by static data. By delivering this skeleton, it accelerates development time and ensures best practices are in place from day one.
+This project will turn the existing “course-management-starter” Next.js template into the fully functional **frontend** for a Course Management System that communicates with a separate Express.js backend and a MySQL database. It leverages the starter’s pre-built UI, authentication screens, role‐based dashboard layouts, Tailwind CSS styling, and Shadcn/ui component library to accelerate development. Instead of using Next.js API routes and Drizzle ORM, the frontend will call out to Express endpoints for all data and authentication.
 
-This starter kit is being built to solve the friction developers face when setting up repeated common tasks: credential handling, session management, page routing, and theming. Key objectives include: 1) delivering a fully working authentication flow (registration & login), 2) providing a gated dashboard area upon successful login, 3) establishing a clear, maintainable project structure using Next.js and TypeScript, and 4) demonstrating a clean theming approach with global and section-specific CSS. Success is measured by having an end-to-end login journey in under 200 lines of code and zero runtime type errors.
-
----
+We’re building this because it saves months of UI work and ensures a modern, responsive, and well‐tested interface from day one. Key objectives include: secure JWT authentication, Role-Based Access Control (RBAC) for Admin, Instructor, Student, and Leadership users; CRUD pages for courses, users, and cohorts; rich data tables and charts; and containerized local development using Docker Compose. Success will be measured by having end-to-end signup/login flows, role‐specific dashboards, data management pages, and a reproducible development environment.
 
 ## 2. In-Scope vs. Out-of-Scope
 
-### In-Scope (Version 1)
-- User registration (sign-up) form with validation
-- User login (sign-in) form with validation
-- Next.js API routes under `/api/auth/route.ts` handling:
-  - Credential validation
-  - Password hashing (e.g., bcrypt)
-  - Session creation or JWT issuance
-- Protected dashboard pages under `/dashboard`:
-  - `layout.tsx` wrapping dashboard content
-  - `page.tsx` rendering static data from `data.json`
-- Global application layout in `/app/layout.tsx`
-- Basic styling via `globals.css` and `dashboard/theme.css`
-- TypeScript strict mode enabled
+### In-Scope
 
-### Out-of-Scope (Later Phases)
-- Integration with a real database (PostgreSQL, MongoDB, etc.)
-- Advanced authentication flows (password reset, email verification, MFA)
-- Role-based access control (RBAC)
-- Multi-tenant or white-label theming
-- Unit, integration, or end-to-end testing suites
-- CI/CD pipeline and production deployment scripts
+*   Adapt Next.js **sign-up** and **sign-in** pages to call the Express.js authentication API and handle JWT storage in an HttpOnly cookie.
 
----
+*   Implement a React Context provider to store and expose user info and role across the app.
+
+*   Build a **role‐based** dashboard layout (`/dashboard/layout.tsx`) that renders different sidebars and landing pages for Admin, Instructor, Student, and Leadership.
+
+*   Create management pages under `/app/dashboard`:
+
+    *   **Admin**: User, Course, Class, Cohort management with DataTable, Dialog, and Form components.
+    *   **Instructor/Student**: Card or Table views for courses, assignments, file upload for materials/submissions.
+    *   **Leadership**: Charts and summary stats pages for KPIs.
+
+*   Remove `/app/api` routes and `/db` directory from the frontend; centralize all API calls in `lib/api-client.ts` using `fetch` or Axios.
+
+*   Integrate TanStack Query (React Query) for data fetching, caching, and mutation management.
+
+*   Maintain existing styling and theming via Tailwind CSS, Shadcn/ui, and `next-themes` for dark mode.
+
+*   Provide a **Docker Compose** configuration that runs the Next.js frontend, Express.js backend, and MySQL database together.
+
+### Out-of-Scope (Phase 1)
+
+*   Implementing or fleshing out the Express.js backend itself (only API contract assumed).
+*   Detailed MySQL schema design and migrations in this repository (handled by backend).
+*   Audit logs, multi-tenant support, advanced reporting beyond basic charts.
+*   Mobile-first native apps or Progressive Web App (PWA) offline support.
+*   Third-party integrations (e.g., payment gateways, LMS connectors).
 
 ## 3. User Flow
 
-A new visitor lands on the root URL and sees a welcome page with options to **Sign Up** or **Sign In**. If they choose Sign Up, they fill in their email, password, and hit “Create Account.” The form submits to `/api/auth/route.ts`, which hashes the password, creates a new user session or token, and redirects them to the dashboard. If any input is invalid, an inline error message explains the issue (e.g., “Password too short”).
+A new visitor arrives at the landing page and clicks **Sign Up**. They see a form built with Shadcn/ui `Form` components. Upon submission, the form calls `POST /auth/register` on the Express API. If registration succeeds, the API responds with a JWT token set in an HttpOnly cookie. The frontend then redirects the user to `/dashboard`, initializes the React Context with user data and role, and displays the role-specific sidebar and home cards/tables.
 
-Once authenticated, the user is taken to the `/dashboard` route. Here they see a sidebar or header defined by `dashboard/layout.tsx`, and the main panel pulls in static data from `data.json`. They can log out (if that control is present), but otherwise their entire session is managed by server-side cookies or tokens. Returning users go directly to Sign In, submit credentials, and upon success they land back on `/dashboard`. Any unauthorized access to `/dashboard` redirects back to Sign In.
-
----
+When an existing user signs in via `/sign-in`, the flow is similar: capture credentials, call `POST /auth/login`, receive and store JWT, then load `/dashboard`. Inside the dashboard, the sidebar items (e.g., “Users,” “Courses,” “My Assignments,” “Analytics”) are rendered based on the user role stored in Context. Clicking a menu item fetches data via TanStack Query, displays it in DataTable or Chart components, and allows CRUD operations (Dialog & Form) that map to Express endpoints.
 
 ## 4. Core Features
 
-- **Sign-Up Page (`/app/sign-up/page.tsx`)**: Form fields for email & password, client-side validation, POST to `/api/auth`.
-- **Sign-In Page (`/app/sign-in/page.tsx`)**: Form fields for email & password, client-side validation, POST to `/api/auth`.
-- **Authentication API (`/app/api/auth/route.ts`)**: Handles both registration and login based on HTTP method, integrates password hashing (bcrypt) and session or JWT logic.
-- **Global Layout (`/app/layout.tsx` + `globals.css`)**: Shared header, footer, and CSS resets across all pages.
-- **Dashboard Layout (`/app/dashboard/layout.tsx` + `dashboard/theme.css`)**: Sidebar or top nav for authenticated flows, section-specific styling.
-- **Dashboard Page (`/app/dashboard/page.tsx`)**: Reads `data.json`, renders it as cards or tables.
-- **Static Data Source (`/app/dashboard/data.json`)**: Example dataset to demo dynamic rendering.
-- **TypeScript Configuration**: `tsconfig.json` with strict mode and path aliases (if any).
-
----
+*   **Authentication**: Email/password sign-up & sign-in, JWT storage, React Context auth state.
+*   **Role-Based Access**: Conditional sidebar and content for Admin, Instructor, Student, Leadership.
+*   **Admin Panels**: User, Course, Class, Cohort management pages using DataTable, Dialog, Form components.
+*   **Instructor/Student Views**: Course listing, schedule tables, assignment upload/download components.
+*   **Leadership Dashboard**: Configurable charts and KPI summaries using Chart components.
+*   **API Client**: Centralized `lib/api-client.ts` for all Express API calls, token injection, error handling.
+*   **Data Fetching**: TanStack Query for caching, loading states, mutations.
+*   **Styling & Theming**: Tailwind CSS, Shadcn/ui, `next-themes` dark mode.
+*   **Containerization**: `docker-compose.yaml` to run `frontend`, `backend`, and `mysql` services.
 
 ## 5. Tech Stack & Tools
 
-- **Framework**: Next.js (App Router) for file-based routing, SSR/SSG, and API routes.
-- **Language**: TypeScript for type safety.
-- **UI Library**: React 18 for component-based UI.
-- **Styling**: Plain CSS via `globals.css` (global reset) and `theme.css` (sectional styling). Can easily migrate to CSS Modules or Tailwind in the future.
-- **Backend**: Node.js runtime provided by Next.js API routes.
-- **Password Hashing**: bcrypt (npm package).
-- **Session/JWT**: NextAuth.js or custom JWT logic (to be decided in implementation).
-- **IDE & Dev Tools**: VS Code with ESLint, Prettier extensions. Optionally, Cursor.ai for AI-assisted coding.
-
----
+*   Frontend: Next.js (App Router), React, TypeScript.
+*   UI Library: Shadcn/ui (DataTable, Dialog, Form, Card, Chart).
+*   Styling: Tailwind CSS, `next-themes` for dark mode.
+*   State & Data: React Context (auth), TanStack Query (data fetching).
+*   API Client: `fetch` or Axios in `lib/api-client.ts`.
+*   Backend (assumed): Express.js, Passport.js (JWT), MySQL, ORM (Prisma or Sequelize).
+*   Containerization: Docker, Docker Compose.
+*   Environment: `.env.local` for `NEXT_PUBLIC_API_URL`, theme flags.
 
 ## 6. Non-Functional Requirements
 
-- **Performance**: Initial page load under 200 ms on a standard broadband connection. API responses under 300 ms.
-- **Security**:
-  - HTTPS only in production.
-  - Proper CORS, CSRF protection for API routes.
-  - Secure password storage (bcrypt with salt).
-  - No credentials or secrets checked into version control.
-- **Scalability**: Structure must support adding database integration, caching layers, and advanced auth flows without rewiring core app.
-- **Usability**: Forms should give real-time feedback on invalid input. Layout must be responsive (mobile > 320 px).
-- **Maintainability**: Code must adhere to TypeScript strict mode. Linting & formatting enforced by ESLint/Prettier.
-
----
+*   **Performance**: Initial page load ≤ 2s; API response times ≤ 500ms; nav interactions ≤ 200ms.
+*   **Security**: JWT in HttpOnly cookies; CSRF protection via same-site cookies; input validation on forms; role guard on UI routes.
+*   **Accessibility**: WCAG AA compliance for UI components; keyboard navigation; proper ARIA labels.
+*   **Reliability**: Graceful error and loading states; retry logic for transient API failures.
+*   **Scalability**: Modular components and TanStack Query caching to support large data sets.
 
 ## 7. Constraints & Assumptions
 
-- **No Database**: Dashboard uses only `data.json`; real database integration is deferred.
-- **Node Version**: Requires Node.js >= 14.
-- **Next.js Version**: Built on Next.js 13+ App Router.
-- **Authentication**: Assumes availability of bcrypt or NextAuth.js at implementation time.
-- **Hosting**: Targets serverless or Node.js-capable hosting (e.g., Vercel, Netlify).
-- **Browser Support**: Modern evergreen browsers; no IE11 support required.
-
----
+*   The Express.js backend exposes RESTful endpoints for auth and CRUD operations at `NEXT_PUBLIC_API_URL`.
+*   MySQL database is available and reachable in Docker Compose network.
+*   Team is familiar with TypeScript, Next.js, and React Query.
+*   No Next.js API routes or Drizzle ORM will remain in the frontend code.
+*   Environment variables follow 12-factor app conventions.
 
 ## 8. Known Issues & Potential Pitfalls
 
-- **Static Data Limitation**: `data.json` is only for demo. A real API or database will be needed to avoid stale data.
-  *Mitigation*: Define a clear interface for data fetching so swapping to a live endpoint is trivial.
+*   **CORS**: Must configure Express CORS to accept requests from the Next.js origin.
+*   **Token Refresh**: JWT expiration requires refresh or re-login; consider adding a `/auth/refresh` endpoint later.
+*   **Docker Networking**: Ensure service names in `docker-compose.yaml` match API URL env variables.
+*   **Error Handling**: Centralize API errors in `lib/api-client.ts` to avoid duplication.
+*   **Role Sync**: Frontend role checks must mirror backend authorization rules to prevent UI leaks.
 
-- **Global CSS Conflicts**: Using global styles can lead to unintended overrides.
-  *Mitigation*: Plan to migrate to CSS Modules or utility-first CSS in Phase 2.
-
-- **API Route Ambiguity**: Single `/api/auth/route.ts` handling both sign-up and sign-in could get complex.
-  *Mitigation*: Clearly branch on HTTP method (`POST /register` vs. `POST /login`) or split into separate files.
-
-- **Lack of Testing**: No test suite means regressions can slip in.
-  *Mitigation*: Build a minimal Jest + React Testing Library setup in an early iteration.
-
-- **Error Handling Gaps**: Client and server must handle edge cases (network failures, malformed input).
-  *Mitigation*: Define a standard error response schema and show user-friendly messages.
-
----
-
-This PRD should serve as the single source of truth for the AI model or any developer generating the next set of technical documents: Tech Stack Doc, Frontend Guidelines, Backend Structure, App Flow, File Structure, and IDE Rules. It contains all functional and non-functional requirements with no ambiguity, enabling seamless downstream development.
+*This document provides a clear, unambiguous blueprint for the AI to build out the frontend adaptation of the course-management-starter template, integrating it with an Express.js/MySQL backend.*
