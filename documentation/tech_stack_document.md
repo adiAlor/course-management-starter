@@ -1,90 +1,120 @@
-# Tech Stack Document
+# Tech Stack Document for Course Management System
 
-This document explains the key technologies chosen for the **codeguide-starter** project. It’s written in everyday language so anyone—technical or not—can understand why each tool was picked and how it supports the application.
+This document explains the technology choices made for your Course Management System in clear, everyday language. It covers the tools used on the frontend and backend, how we deploy and host the app, any external services we tie in, and the steps we take to keep things secure and fast.
 
 ## 1. Frontend Technologies
-The frontend is everything the user sees and interacts with. For this project, we’ve used:
+
+Our frontend is responsible for everything the user sees and interacts with in their browser. Here are the main building blocks:
 
 - **Next.js (App Router)**
-  - A React framework that makes page routing, server-side rendering, and API routes very simple.
-  - Enhances user experience by pre-rendering pages on the server or at build time, leading to faster initial load.
-- **React 18**
-  - The underlying library for building user interfaces with reusable components.
-  - Provides a smooth, interactive experience thanks to its virtual DOM and modern hooks.
+  - A React framework that handles page routing, server-side rendering, and static sites in one package.
+  - Provides fast page loads and SEO-friendly pages out of the box.
 - **TypeScript**
-  - A superset of JavaScript that adds types (labels for data).
-  - Helps catch errors early during development and makes the code easier to maintain.
-- **CSS (globals.css & theme.css)**
-  - **globals.css** applies base styles (fonts, colors, resets) across the entire app.
-  - **dashboard/theme.css** defines the look and feel specific to the dashboard area.
-  - This separation keeps styles organized and avoids accidental style conflicts.
+  - A version of JavaScript that adds type checks.
+  - Helps catch bugs early and ensures the data we send and receive stays consistent.
+- **Tailwind CSS**
+  - A utility-first styling tool that lets us apply CSS rules directly in our HTML-like code.
+  - Speeds up styling and keeps our design consistent with minimal custom CSS.
+- **Shadcn/ui Component Library**
+  - A ready-made set of accessible, themeable UI pieces (DataTable, Dialog, Form, Card, Chart, etc.).
+  - Lets us quickly assemble complex pages like user management or dashboards without building every piece from scratch.
+- **React Context for Global State**
+  - Holds things like the current user’s authentication status and basic profile data.
+  - Makes it easy to share that information across the app without passing props manually.
+- **Custom API Client Module**
+  - A small helper (`lib/api-client.ts`) that centralizes all network calls to our backend.
+  - Keeps our page components clean and makes it easy to switch endpoints or change headers in one place.
+- **TanStack Query (React Query)**
+  - Manages data fetching, caching, and updating for us.
+  - Improves user experience by handling loading states, retries, and background data refresh automatically.
+- **next-themes**
+  - Provides dark mode and light mode theming with minimal setup.
+  - Lets users switch themes and remembers their choice.
 
-By combining these tools, we have a clear structure (Next.js folders for pages and layouts), safer code (TypeScript), and flexible styling with vanilla CSS.
+These choices together deliver a modern, fast, and maintainable user interface.
 
 ## 2. Backend Technologies
-The backend handles data, user accounts, and the logic behind the scenes. Our choices here are:
 
-- **Next.js API Routes**
-  - Allows us to write server-side code (`route.ts` files) alongside our frontend in the same project.
-  - Runs on Node.js, so we can handle requests like sign-up, sign-in, and data fetching in one place.
-- **Node.js Runtime**
-  - The JavaScript environment on the server that executes our API routes.
-- **bcrypt** (npm package)
-  - A library for hashing passwords securely before storing them.
-  - Ensures that even if someone got access to our data, raw passwords aren’t visible.
-- **(Optional) NextAuth.js or JWT**
-  - While this starter kit shows a custom authentication flow, it can easily integrate services like NextAuth.js for email-based login or JWT (JSON Web Tokens) for stateless sessions.
+Our backend handles all the data storage, business logic, and security checks. It sits on a server and talks to the frontend through a set of API endpoints.
 
-These components work together to receive user credentials, verify or store them securely, manage sessions or tokens, and deliver protected data back to the frontend.
+- **Express.js (Node.js)**
+  - A lightweight, flexible server framework for building RESTful APIs.
+  - Manages routing (which URL does what) and middleware (code that runs before or after requests).
+- **MySQL Database**
+  - A reliable, widely used relational database for storing users, courses, assignments, and roles.
+  - Ensures data integrity and supports complex queries.
+- **Prisma (or Sequelize) ORM**
+  - Lets us work with database records using JavaScript/TypeScript objects instead of raw SQL.
+  - Automatically generates type-safe models, reducing boilerplate code.
+- **Passport.js with JWT Strategy**
+  - Handles user authentication by issuing JSON Web Tokens (JWTs) when users log in.
+  - Tokens are stored securely in HttpOnly cookies and sent with each request to verify identity and role.
+- **Role-Based Access Control (RBAC)**
+  - Ensures Admins, Instructors, Students, and Leadership users only see and do what they’re allowed to.
+  - Roles are checked on every protected API endpoint.
+
+Together, these backend pieces provide a secure, scalable foundation for all our data and logic.
 
 ## 3. Infrastructure and Deployment
-Infrastructure covers where and how we host the app, as well as how changes get delivered:
 
+We use containerization, version control, and automated pipelines to make deploying and scaling the system reliable and repeatable.
+
+- **Docker & Docker Compose**
+  - Packages the frontend, backend, and database into separate containers.
+  - A single `docker-compose up` command spins up all three services.
 - **Git & GitHub**
-  - Version control system (Git) and remote hosting (GitHub) keep track of all code changes and allow team collaboration.
-- **Vercel (or Netlify)**
-  - A popular hosting service optimized for Next.js, with one-click deployments and global content delivery.
-  - Automatically rebuilds and deploys the site whenever code is pushed to the main branch.
-- **GitHub Actions (CI/CD)**
-  - Automates tasks like linting (ESLint), formatting (Prettier), and running any tests you add.
-  - Ensures that only clean, tested code goes live.
+  - Code is versioned in a Git repository hosted on GitHub.
+  - Enables collaboration, code reviews, and rollback if needed.
+- **Continuous Integration / Continuous Deployment (CI/CD)**
+  - Automated pipelines (e.g., GitHub Actions) run tests and linting on every push.
+  - On successful builds, the latest code can be deployed to staging or production environments automatically.
+- **Environment Variables**
+  - Configuration values like API URLs or database credentials are stored outside the code.
+  - `.env.local` for local development and secret management in production ensure we don’t leak sensitive data.
 
-Together, these tools provide a reliable, scalable setup where every code change is tested and deployed quickly, with minimal manual work.
+This setup makes it easy for any developer on your team to get the system running and ensures consistent environments from development through production.
 
 ## 4. Third-Party Integrations
-While this starter kit is minimal by design, it already includes or can easily add:
 
-- **bcrypt**
-  - For secure password hashing (included as an npm dependency).
-- **NextAuth.js** (optional)
-  - A full-featured authentication library supporting email/password, OAuth, and more.
-- **Sentry or LogRocket** (optional)
-  - For real-time error tracking and performance monitoring in production.
+We rely on a few well-established libraries and services to add functionality quickly and safely.
 
-These integrations help extend the app’s capabilities without building every feature from scratch.
+- **Shadcn/ui** (component library) – quick UI building blocks as mentioned above.
+- **TanStack Query** – advanced data-fetching features.
+- **next-themes** – theme switching with persistence.
+- **Passport.js** – authentication middleware for Express.
+- **Prisma/Sequelize** – ORM layer for database operations.
+
+These integrations speed up development, reduce custom code, and leverage community-tested solutions.
 
 ## 5. Security and Performance Considerations
-We’ve baked in several measures to keep users safe and the app running smoothly:
+
+We’ve built in measures to protect data, control access, and deliver fast interactions.
 
 Security:
-- Passwords are never stored in plain text—bcrypt hashes them with a random salt.
-- API routes can implement CSRF protection and input validation to block malicious requests.
-- Session tokens or cookies are marked secure and HttpOnly to prevent theft via JavaScript.
+- **JWTs in HttpOnly Cookies**: Tokens aren’t accessible by JavaScript, protecting against cross-site scripting (XSS).
+- **Role Checks on Every Endpoint**: Users can’t access or modify data they shouldn’t.
+- **HTTPS**: All traffic should run over secure TLS connections in production.
+- **Environment Variable Management**: Keeps secrets out of version control.
 
 Performance:
-- Server-side rendering (SSR) and static site generation (SSG) in Next.js deliver pages faster.
-- Code splitting and lazy-loaded components ensure users only download what they need.
-- Global CSS and theme files are small and cached by the browser for quick repeat visits.
+- **Next.js Code Splitting**: Only the code needed for each page is sent to the browser.
+- **Static and Server-Side Rendering**: Pre-renders pages where possible for faster load times and SEO benefits.
+- **Tailwind JIT Compilation**: Generates only the CSS classes we actually use.
+- **Data Caching with TanStack Query**: Reduces duplicate network requests and shows cached data instantly.
 
-These strategies work together to give users a fast, secure experience every time.
+Together, these practices keep the app fast, responsive, and secure for all users.
 
 ## 6. Conclusion and Overall Tech Stack Summary
-In building **codeguide-starter**, we chose technologies that:
 
-- Align with modern web standards (Next.js, React, TypeScript).
-- Provide a clear, file-based project structure for rapid onboarding.
-- Offer built-in support for server-side rendering, API routes, and static assets.
-- Emphasize security through password hashing, session management, and safe defaults.
-- Enable easy scaling and future enhancements via modular code and optional integrations.
+Our Course Management System is built on a modern, flexible stack that balances developer productivity with user experience:
 
-This stack strikes a balance between simplicity for newcomers and flexibility for experienced teams. It accelerates development of a secure authentication flow and a polished dashboard, while leaving room to plug in databases, test suites, and advanced features as the project grows.
+- Frontend: **Next.js**, **TypeScript**, **Tailwind CSS**, **Shadcn/ui**, **React Context**, **TanStack Query**, **next-themes**
+- Backend: **Express.js**, **MySQL**, **Prisma/Sequelize**, **Passport.js (JWT)**, **Role-Based Access Control**
+- Infrastructure: **Docker**, **Docker Compose**, **Git/GitHub**, **CI/CD Pipelines**, **Environment Variables**
+
+This combination ensures:
+- A polished, responsive user interface that adapts to user roles and devices.
+- A secure, maintainable backend that enforces access rules and protects data.
+- A consistent deployment process that scales with your team and user base.
+
+By choosing these proven technologies and patterns, we set your project up for a smooth development experience, rapid feature growth, and a reliable production environment. If you have any questions about these choices or want to explore alternatives, let’s discuss them further!
